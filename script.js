@@ -1,21 +1,30 @@
 // this variable will alternate between 'red' to 'yellow' each turn
 var currentTurn = 'red';
 var gameRunning = true;
+var redCoinTexture = 'assets/redcoin.png';
+var yellowCoinTexture = 'assets/yellowcoin.png';
+var turns = 0;
+var timer;
+var timerRunning = false;
+var currentClock = 1200;
 
 // SETTER FOR CELLS
 function setCell(column, row, color) {
     column--;
     row--;
-    if (column < 0 || column > 6) { throw Error('Column ' + column + ' does not exist.')}
-    if (row < 0 || row > 6) { throw Error('Row ' + row + ' does not exist.')}
+    if (column < 0 || column > 6) { throw Error('Column ' + (column + 1) + ' does not exist.')}
+    if (row < 0 || row > 5) { throw Error('Row ' + (row + 1) + ' does not exist.')}
     if (color == "red") {
-        $("#row" + row + "column" + column).css("background-color", "red");
+        $("#row" + row + "column" + column).children('img').attr('src', redCoinTexture);
+        $("#row" + row + "column" + column).children('img').addClass('coin-placed' + (row + 1));
         return "Cell (" + (column + 1) + "," + (row + 1) + ") set to red.";
     } else if (color == "yellow") {
-        $("#row" + row + "column" + column).css("background-color", "yellow");
+        $("#row" + row + "column" + column).children('img').attr('src', yellowCoinTexture);
+        $("#row" + row + "column" + column).children('img').addClass('coin-placed' + (row + 1));
         return "Cell (" + (column + 1) + "," + (row + 1) + ") set to yellow.";
     } else if (color == "empty") {
-        $("#row" + row + "column" + column).css("background-color", "white");
+        $("#row" + row + "column" + column).children('img').attr('src', '');
+        $("#row" + row + "column" + column).children('img').removeClass('coin-placed' + (row + 1));
         return "Cell (" + (column + 1) + "," + (row + 1) + ") set to empty.";
     }
 }
@@ -24,16 +33,16 @@ function setCell(column, row, color) {
 function getCell(column, row) {
     column--;
     row--;
-    var color = $("#row" + row + "column" + column).css("background-color");
-    switch (color) {
-        case "rgb(255, 255, 255)":
+    var source = $("#row" + row + "column" + column).children('img').attr('src');
+    switch (source) {
+        case '':
             return 'empty';
-        case "rgb(255, 255, 0)":
+        case yellowCoinTexture:
             return 'yellow';
-        case "rgb(255, 0, 0)":
+        case redCoinTexture:
             return 'red';
         default:
-            return color;
+            return source;
     }
 }
 
@@ -41,18 +50,44 @@ function setWin(column, row) {
     column--;
     row--;
     if (column < 0 || column > 6) { throw Error('Column ' + column + ' does not exist.')}
-    if (row < 0 || row > 6) { throw Error('Row ' + row + ' does not exist.')}
-    $("#row" + row + "column" + column).addClass('winning-coin');
+    if (row < 0 || row > 5) { throw Error('Row ' + row + ' does not exist.')}
+    setTimeout(() => {
+        $("#row" + row + "column" + column).children('img').addClass('winning-coin');
+    }, 1000);
 }
 
 function isEmpty(column, row) { if (getCell(column, row) == 'empty') { return true } else { return false; } }
 
 function declareLoss() {
+    clearInterval(timer);
     gameRunning = false;
     console.log('All holes are filled, and you have not reached 4 in a row.')
 }
 
 function declareWin() {
+    setTimeout(() => {
+        switch (currentTurn) {
+            case 'red':
+                $('#teamWonDisplay').text('Red');
+                $('#teamWonDisplay').css('color','red');
+                $('#teamWonDisplay').css('background-color','black');
+                var winText = $('#turnDisplay').text();
+                winText = winText.replace('%', turns.toString());
+                $('#turnDisplay').text(winText);
+                break;
+            case 'yellow':
+                $('#teamWonDisplay').text('Yellow');
+                $('#teamWonDisplay').css('color','yellow');
+                $('#teamWonDisplay').css('background-color','black');
+                var winText = $('#turnDisplay').text();
+                winText = winText.replace('%', turns.toString());
+                $('#turnDisplay').text(winText);
+                break;
+        }
+        $('#winDisplay').css('display','block');
+        $('#utilityContainer').css('display', 'none');
+    }, 1000);
+    clearInterval(timer);
     gameRunning = false;
 }
 
@@ -203,7 +238,7 @@ function doTurn() {
             }
 
         }
-        for (var i = 0; i < 7; i++) {
+        for (var i = 0; i < 6; i++) {
             if (!isEmpty(dropColumn, i + 1)) {
                 setCell(dropColumn, i, currentTurn);
                 placeCoords.x = dropColumn;
@@ -216,9 +251,9 @@ function doTurn() {
     }
     
     if (!coinPlaced) {
-        setCell(dropColumn, 7, currentTurn);
+        setCell(dropColumn, 6, currentTurn);
         placeCoords.x = dropColumn;
-        placeCoords.y = 7;
+        placeCoords.y = 6;
         coinPlaced = true;
     }
     var winningCoins = checkForWin(placeCoords.x, placeCoords.y);
@@ -234,12 +269,42 @@ function doTurn() {
     } else if (currentTurn == 'yellow') {
         currentTurn = 'red';
     }
+    turns++;
 }
 
-for (var i = 0; i < 7; i++) {
+function autofill() {
+    while (gameRunning) {
+        doTurn();
+    }
+}
+
+function toggleTimedFill() {
+    console.log(currentClock);
+    if (timerRunning) {
+        clearInterval(timer);
+        $('#toggleTimerFill').html('Turn On Pulse Fill');
+        $('#timerSpeedInputContainer').css('display', 'none');
+        timerRunning = false;
+    } else {
+        doTurn();
+        timer = setInterval(doTurn, currentClock);
+        $('#toggleTimerFill').html('Turn Off Pulse Fill');
+        $('#timerSpeedInputContainer').css('display', 'block');
+        timerRunning = true;
+    }
+}
+
+function onTimerSpeedChange() {
+    clearInterval(timer);
+    currentClock = parseFloat($('#timerSpeed').val()) * 1000;
+    console.log(currentClock);
+    timer = setInterval(doTurn, currentClock);
+}
+
+for (var i = 0; i < 6; i++) {
     $("#board").append("<tr id='row" + i + "'>");
     for (var k = 0; k < 7; k++) {
         $("#row" + i).append("<td id='row" + i + "column" + k + "'>");
-        $("#row" + i + "column" + k).css('background-color', 'white');
+        $("#row" + i + "column" + k).append("<img src='' class='cell-img'>");
     }
 }

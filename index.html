@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Auto Connect-4</title>
+    <title>Self-Playing Connect 4</title>
     <link href="style.css" type="text/css" rel="stylesheet">
+    <link href="assets/redcoin.png" type="img/png" rel="icon">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 </head>
 <body>
@@ -10,6 +11,17 @@
         
     </table>
     <script src="script.js"></script>
-    <button id="new-turn" onclick="doTurn()">Next Turn</button>
+    <div id="utilityContainer" class="utility-container">
+        <button id="new-turn" onclick="doTurn()">Next Turn</button>
+        <button id="autofill" onclick="autofill()">Autofill</button>
+        <button id="toggleTimerFill" onclick="toggleTimedFill()">Turn On Pulse Fill</button>
+        <div class="input-box" id="timerSpeedInputContainer"><label for="timerSpeed">Clock Speed (Seconds): </label><input type="number" id="timerSpeed" onchange="onTimerSpeedChange()" value=1.2></div>
+    </div>
+    <div class="win-display" id="winDisplay">
+        <h1 id="teamWonDisplay">None</h1>
+        <p id="turnDisplay">Won the Game in % Turns</p>
+        <button id="reload" onclick="location.reload()">Go Again</button>
+    </div>
+    <p class="copyright">&copy; 2020 David Bootle</p>
 </body>
 </html>
