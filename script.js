@@ -7,13 +7,15 @@ var turns = 0;
 var timer;
 var timerRunning = false;
 var currentClock = 1200;
+var boardHeight = 6;
+var boardWidth = 7;
 
 // SETTER FOR CELLS
 function setCell(column, row, color) {
     column--;
     row--;
-    if (column < 0 || column > 6) { throw Error('Column ' + (column + 1) + ' does not exist.')}
-    if (row < 0 || row > 5) { throw Error('Row ' + (row + 1) + ' does not exist.')}
+    if (column < 0 || column > (boardWidth - 1)) { throw Error('Column ' + (column + 1) + ' does not exist.')}
+    if (row < 0 || row > (boardHeight - 1)) { throw Error('Row ' + (row + 1) + ' does not exist.')}
     if (color == "red") {
         $("#row" + row + "column" + column).children('img').attr('src', redCoinTexture);
         $("#row" + row + "column" + column).children('img').addClass('coin-placed' + (row + 1));
@@ -49,19 +51,35 @@ function getCell(column, row) {
 function setWin(column, row) {
     column--;
     row--;
-    if (column < 0 || column > 6) { throw Error('Column ' + column + ' does not exist.')}
-    if (row < 0 || row > 5) { throw Error('Row ' + row + ' does not exist.')}
+    if (column < 0 || column > (boardWidth - 1)) { throw Error('Column ' + column + ' does not exist.')}
+    if (row < 0 || row > (boardHeight - 1)) { throw Error('Row ' + row + ' does not exist.')}
     setTimeout(() => {
         $("#row" + row + "column" + column).children('img').addClass('winning-coin');
     }, 1000);
 }
 
+function clearWin(column, row) {
+    column--;
+    row--;
+    if (column < 0 || column > (boardWidth - 1)) { throw Error('Column ' + column + ' does not exist.')}
+    if (row < 0 || row > (boardHeight - 1)) { throw Error('Row ' + row + ' does not exist.')}
+    $("#row" + row + "column" + column).children('img').removeClass('winning-coin');
+}
+
 function isEmpty(column, row) { if (getCell(column, row) == 'empty') { return true } else { return false; } }
 
 function declareLoss() {
+    setTimeout(() => {
+        $('#teamWonDisplay').text('Game Over');
+        $('#teamWonDisplay').css('color', 'white');
+        $('#teamWonDisplay').css('background-color', 'black');
+        $('#turnDisplay').text('The Board Was Filled In % Turns'.replace('%', turns.toString()));
+        $('#winDisplay').css('display','block');
+        $('#utilityContainer').css('display', 'none');
+    }, 1000);
     clearInterval(timer);
+    timerRunning = false;
     gameRunning = false;
-    console.log('All holes are filled, and you have not reached 4 in a row.')
 }
 
 function declareWin() {
@@ -88,6 +106,7 @@ function declareWin() {
         $('#utilityContainer').css('display', 'none');
     }, 1000);
     clearInterval(timer);
+    timerRunning = false;
     gameRunning = false;
 }
 
@@ -223,13 +242,13 @@ function doTurn() {
     var successfulPlace = false;
     var placeCoords = {};
     while (!successfulPlace) {
-        var dropColumn = Math.floor(Math.random() * 7) + 1; // random number from 1 to 7
+        var dropColumn = Math.floor(Math.random() * boardWidth) + 1; // random number from 1 to 7
         if (!isEmpty(dropColumn, 1)) {
             var fullColumns = 0;
-            for (var i = 0; i < 7; i++) {
+            for (var i = 0; i < boardWidth; i++) {
                 if (!isEmpty(i, 1)) {fullColumns++;}
             }
-            if (fullColumns != 7) {
+            if (fullColumns != boardWidth) {
                 continue;
             } else {
                 declareLoss();
@@ -238,7 +257,7 @@ function doTurn() {
             }
 
         }
-        for (var i = 0; i < 6; i++) {
+        for (var i = 0; i < boardHeight; i++) {
             if (!isEmpty(dropColumn, i + 1)) {
                 setCell(dropColumn, i, currentTurn);
                 placeCoords.x = dropColumn;
@@ -251,9 +270,9 @@ function doTurn() {
     }
     
     if (!coinPlaced) {
-        setCell(dropColumn, 6, currentTurn);
+        setCell(dropColumn, boardHeight, currentTurn);
         placeCoords.x = dropColumn;
-        placeCoords.y = 6;
+        placeCoords.y = boardHeight;
         coinPlaced = true;
     }
     var winningCoins = checkForWin(placeCoords.x, placeCoords.y);
@@ -279,7 +298,6 @@ function autofill() {
 }
 
 function toggleTimedFill() {
-    console.log(currentClock);
     if (timerRunning) {
         clearInterval(timer);
         $('#toggleTimerFill').html('Turn On Pulse Fill');
@@ -297,13 +315,32 @@ function toggleTimedFill() {
 function onTimerSpeedChange() {
     clearInterval(timer);
     currentClock = parseFloat($('#timerSpeed').val()) * 1000;
-    console.log(currentClock);
     timer = setInterval(doTurn, currentClock);
 }
 
-for (var i = 0; i < 6; i++) {
+function reset() {
+    // go through each row
+    for (var i = 1; i < (boardHeight + 1); i++) {
+        // go through each column
+        for (var k = 1; k < (boardWidth + 1); k++) {
+            setCell(k, i, 'empty');
+            clearWin(k, i);
+        }
+    }
+    turns = 0;
+    currentTurn = 'red';
+    gameRunning = true;
+    $('#winDisplay').css('display','none');
+    $('#utilityContainer').css('display', 'block');
+    $('#toggleTimerFill').html('Turn On Pulse Fill');
+    $('#timerSpeedInputContainer').css('display', 'none');
+    timer = null;
+
+}
+
+for (var i = 0; i < boardHeight; i++) {
     $("#board").append("<tr id='row" + i + "'>");
-    for (var k = 0; k < 7; k++) {
+    for (var k = 0; k < boardWidth; k++) {
         $("#row" + i).append("<td id='row" + i + "column" + k + "'>");
         $("#row" + i + "column" + k).append("<img src='' class='cell-img'>");
     }

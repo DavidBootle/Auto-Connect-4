@@ -48,6 +48,9 @@ This functoin is run by the **Autofill** button. It is basically a `while` loop 
 ### `toggleTimedFill()`
 This function is run whenever "Turn On Pulse Fill" or "Turn Off Pulse Fill" is clicked.
 
+### `reset()`
+This function is run when the "Go Again" button is pressed. It clears the board, starts the game clock, and sets variables to their default values.
+
 ## Dev Variables
 These variables control various aspects of the game. Changing them will likely break the game, but feel free to play around with them and see what they do.
 
