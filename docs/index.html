@@ -1,0 +1,67 @@
+<html><head><style>body {
+   color: black;
+font-family: sans-serif;
+   padding: 20px;
+   padding-top: 40px;
+}
+p {
+   margin-bottom: 30px;
+}
+h2, h3 {
+   margin-bottom: 0;
+}
+h2 {
+   font-weight: bold;
+}
+code {
+   font-family: monospace;
+}
+</style></head><body><h1 id="self-playing-connect-4-console-cheat-sheet">Self-Playing Connect 4 Console Cheat Sheet</h1>
+<p>The computer decides for each turn what column to drop the coin into. This decision is completely random and is accomplished by having the computer pick a number from 1 to 7. I don&#39;t know why I made this program, but it was a fun and challenging project anyway.</p>
+<h2 id="utilities">Utilities</h2>
+<h3 id="drop-coin">Drop Coin</h3>
+<p>The <strong>Drop Coin</strong> button simply executes the coin dropping function once, and drops one coin on the board.</p>
+<h3 id="autofill">Autofill</h3>
+<p>The <strong>Autofill</strong> button fills in the entire board at once.</p>
+<h3 id="pulse-fill">Pulse Fill</h3>
+<p>The <strong>Pulse Fill</strong> feature can be toggled using the &quot;Turn Off Pulse Fill&quot; or &quot;Turn On Pulse Fill&quot; buttons. Pulse fill will drop 1 coin on the board every specified amount of time. The default time is 1.2 seconds. When pulse fill is active, a number input will appear below the buttons. The number in this input controls how often coins will drop, in seconds. After you change the number and take focus off of the input, the pulse fill will immedietly change to the new time input.</p>
+<h2 id="dev-functions">Dev Functions</h2>
+<p>There are many commands that can be typed into the console to change the backend. These commands are used internally by the game, so things may break if you use them.</p>
+<p>The backend code relies heavily on a coordinate system. The <code>x</code> and <code>y</code> parameters in most functions refer to the coordinate position of the cell, with (<code>1</code>,<code>1</code>) being the top left cell, and (<code>7</code>,<code>6</code>) being the bottom right cell.</p>
+<h3 id="-setcell-x-y-color-"><code>setCell(x,y,color)</code></h3>
+<p>Using this command will set a cell at the coordinate location of (<code>x</code>,<code>y</code>) on the board to the specified color.  The acceptable parameters for the <code>color</code> argument are <code>red</code>, <code>yellow</code>, or <code>empty</code>.</p>
+<h3 id="-getcell-x-y-"><code>getCell(x,y)</code></h3>
+<p>Using this command will get the current state of the cell at the coordinate location (<code>x</code>,<code>y</code>) on the board. The possible return states are <code>red</code>, <code>yellow</code>, or <code>empty</code>.</p>
+<h3 id="-setwin-x-y-"><code>setWin(x,y)</code></h3>
+<p>This command will trigger the win animation for a coin at the coordinate position (<code>x</code>,<code>y</code>). This function is used in the backend to trigger the animation for the coins that won, that is, that were 4 in a row. To be clear, this function <em>does not</em> trigger the end of the game, it only triggers the animation for the given coin.</p>
+<h3 id="-declareloss-"><code>declareLoss()</code></h3>
+<p>This function will stop the game and put a message in the console explaining that you lost the game. This function is intended for if the entire board is filled with coins, and four in a row has not been achieved. However, this function has not yet been properly implemented, as during test, a loss never occurred.</p>
+<h3 id="-declarewin-"><code>declareWin()</code></h3>
+<p>This function will stop the game, hide the utility buttons, and show the win text. It will update the team name with the current turn color, and adds the number of turns to the win text. This function is run when four in a row is found, and will trigger a win. However, it does not trigger any animations: <code>setWin(x,y)</code> does that.</p>
+<h3 id="-doturn-"><code>doTurn()</code></h3>
+<p>This is the function that is run when the <strong>Drop Coin</strong> button is pressed. This function is run as many times as possible, until a solution is found, when the <strong>Autofill</strong> button is pressed. This function is run repeatedly when <strong>Pulse Drop</strong> is enabled.</p>
+<h3 id="-checkwin-x-y-"><code>checkWin(x,y)</code></h3>
+<p>This function checks to see if the coin placed, represented by (<code>x</code>,<code>y</code>), is part of a four in a row sequence. The logic and functions behind this are very complicated, and should only be operated by the backend. If you are curious however, you can see the full function in the sources menu of inspector. This function returns a list of cell positions, represented as <code>[x,y]</code>, that represent cells that are part of a four in a row sequence. If there is no four in a row found, then an empty list is returned. This function is used in the backend every time a coin is placed to see if it has made a line of four and won the game.</p>
+<h3 id="-ontimerspeedchange-"><code>onTimerSpeedChange()</code></h3>
+<p>This function is run whenever the value of the pulse fill speed input is updated. This can be manually run as well to forcefully get the value of the input and update the pulse fill. Running this function will start the pulse fill, as during normal use, the pulse fill would have to be started for the function to be run.</p>
+<h3 id="-autofill-"><code>autofill()</code></h3>
+<p>This function is run by the <strong>Autofill</strong> button. It is basically a <code>while</code> loop that runs <code>doTurn()</code> until <code>gameRunning</code> becomes <code>false</code>. This results in an almost instantaneous filling of the board.</p>
+<h3 id="-toggletimedfill-"><code>toggleTimedFill()</code></h3>
+<p>This function is run whenever &quot;Turn On Pulse Fill&quot; or &quot;Turn Off Pulse Fill&quot; is clicked.</p>
+<h3 id="-reset-"><code>reset()</code></h3>
+<p>This function is run when the &quot;Go Again&quot; button is pressed. It clears the board, starts the game clock, and sets variables to their default values.</p>
+<h2 id="dev-variables">Dev Variables</h2>
+<p>These variables control various aspects of the game. Changing them will likely break the game, but feel free to play around with them and see what they do.</p>
+<h3 id="-currentturn-"><code>currentTurn</code></h3>
+<p>This variable is used to store what color coin should be placed, and if a coin is placed and it wins, what color team has won. Every time a coin is placed, specifically, during the <code>doTurn()</code> function, this variable alternates between <code>red</code> and <code>yellow</code>. The default starting state is <code>red</code>.</p>
+<h3 id="-gamerunning-"><code>gameRunning</code></h3>
+<p>This variable is used by internal functions to decide whether or not to run when triggered. The default value for this variable is <code>true</code>, and it is set to <code>false</code> by the <code>declareWin()</code> and <code>declareLoss()</code> functions. Setting this variable to <code>false</code> manually will render the onscreen buttons useless, as the <code>doTurn()</code> function will not run unless this variable is set to <code>true</code>. On the other hand, setting this variable to <code>true</code> after the game is over will allow you to use functions like <code>doTurn()</code> in the console.</p>
+<h3 id="-redcointexture-and-yellowcointexture-"><code>redCoinTexture</code> and <code>yellowCoinTexture</code></h3>
+<p>These two variables are used to store the url of the textures for the red and yellow coins. Changing these variables to say, a web address, will cause any new coins to have a different texture.</p>
+<h3 id="-turns-"><code>turns</code></h3>
+<p>This variable keeps track of how many times a coin has been placed on the board. It is incremented every time <code>doTurn()</code> finishes successfully. The variable is only really used for the win screen, where the number of turns in the game are displayed. It&#39;s starting value is <code>0</code>.</p>
+<h3 id="-timerrunning-"><code>timerRunning</code></h3>
+<p>This variable is used to keep track of the state of the timer. This variable is consulted when <code>toggleTimedFill()</code> is run, deciding what buttons to hide and show, and whether to start or clear the timer. Changing this variable does not effect the timer until it is updated using <code>toggleTimedFill()</code>. It&#39;s default value is <code>false</code>.</p>
+<h3 id="-currentclock-"><code>currentClock</code></h3>
+<p>This variable is used to store how fast the pulse fill should be in milliseconds. Changing this variable will not affect anything, as it will be overwritten by anything that would cause the timer to update.</p>
+</body></html>
